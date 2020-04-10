@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- * Derived from ROBOTIS demo code by github.com/Maehem
+ * Derived by https://github.com/Maehem from ROBOTIS Dynamixel2Arduino demo code 
  * 
 * Copyright 2016 ROBOTIS CO., LTD.
 * 
@@ -13,7 +13,7 @@
 * 
 * -- A custom serial port handler was written and mostly based on Robitis own example code.
 *     * begin() was overridden.
-*     * Track whether class has begin() already called to prevent esp32 lockup when changing baud rate.
+*     * Track whether port is open already to prevent esp32 lockup when changing baud rate.
 *     * First time begin() calls port.begin() with pin settings and baud.
 *     * Subsequent calls to begin only affect baud rate by calling esp32 updateBaudRate() method.
 * 
@@ -34,36 +34,36 @@
 
 #include <Dynamixel2Arduino.h>
 
-#define DXL_SERIAL   Serial1
+// Debug messages will appear on USB/serial monitor connection.
 #define DEBUG_SERIAL Serial
 
 // This is the other tab in the Arduino IDE
 #include "ESP32SerialPortHandler.cpp"
 
-const uint8_t DXL_DIR_PIN = 4; // Lettuce DIR pin
-const uint8_t DXL_RX_PIN = 39; // Lettuce RX PIN
-const uint8_t DXL_TX_PIN = 32; // Lettuce TX PIN
- 
+// Port and pins specific to your ESP32 configuration.
+#define DXL_SERIAL   Serial1
+const uint8_t DXL_DIR_PIN = 4; //  DIR pin
+const uint8_t DXL_RX_PIN = 39; //  RX PIN
+const uint8_t DXL_TX_PIN = 32; //  TX PIN
 
 #define MAX_BAUD  5
 const int32_t baud[MAX_BAUD] = {57600, 115200, 1000000, 2000000, 3000000};
 
+// The old way of creating dxl
 //Dynamixel2Arduino dxl(DXL_SERIAL, DXL_DIR_PIN);
-//const uint8_t DXL_ID = 2;
-//const float DXL_PROTOCOL_VERSION = 1.0;
 
+// New way of creating dxl
 Dynamixel2Arduino dxl;
-ESP32SerialPortHandler dxl_port(DXL_SERIAL, DXL_RX_PIN, DXL_TX_PIN, DXL_DIR_PIN);
+
+// Our custom handler with RX and TX pins specified.
+ESP32SerialPortHandler esp_dxl_port(DXL_SERIAL, DXL_RX_PIN, DXL_TX_PIN, DXL_DIR_PIN);
 
 
 void setup() {
 
-  // Set Port instance
-  dxl.setPort(dxl_port);
-
-
+  // Set custom port handler
+  dxl.setPort(esp_dxl_port);
   
-  // put your setup code here, to run once:
   int8_t index = 0;
   int8_t found_dynamixel = 0;
 
@@ -93,8 +93,7 @@ void setup() {
           found_dynamixel++;
           DEBUG_SERIAL.println();
         }
-      }
-      
+      }      
     }
   }
   

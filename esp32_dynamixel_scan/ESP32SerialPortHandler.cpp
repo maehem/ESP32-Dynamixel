@@ -8,16 +8,15 @@ class ESP32SerialPortHandler : public DYNAMIXEL::SerialPortHandler
     {
       rx_pin_ = rx_pin;
       tx_pin_ = tx_pin;
-      begun = false; // Track if begin was called first time.
     }
 
     virtual void begin(unsigned long baud) override
     {
       baud_ = baud;
-      if ( begun ) {
+      if ( getOpenState() ) {
+        // Already open, so just update baud rate.
         port_.updateBaudRate(baud_);
       } else {
-        begun = true;
         // If port_.begin(...) were called again, esp32 could lock up.
         port_.begin(baud_, SERIAL_8N1, rx_pin_, tx_pin_);
       }
@@ -30,7 +29,6 @@ class ESP32SerialPortHandler : public DYNAMIXEL::SerialPortHandler
       }
 
       setOpenState(true);
-
     }
 
   private:
@@ -39,5 +37,4 @@ class ESP32SerialPortHandler : public DYNAMIXEL::SerialPortHandler
     const int dir_pin_;
     int rx_pin_;
     int tx_pin_;
-    boolean begun;
 };
